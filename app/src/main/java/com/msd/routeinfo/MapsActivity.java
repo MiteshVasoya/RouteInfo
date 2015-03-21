@@ -1,11 +1,14 @@
 package com.msd.routeinfo;
 
 import android.content.Context;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -13,6 +16,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.List;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity {
 
@@ -79,7 +85,24 @@ public class MapsActivity extends FragmentActivity {
         double lng = location.getLongitude();
         LatLng coordinate = new LatLng(lat, lng);
 
-        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title("My Location"));
+        String post = "";
+        Geocoder code=new Geocoder(MapsActivity.this);
+        try
+        {
+            List<Address> addresses = code.getFromLocation(lat,lng, 1);
+            if(addresses.size() >0)
+            {
+                Address add=new Address(Locale.getDefault());
+                add=addresses.get(0);
+                post= add.getAddressLine(0)+", "+add.getAddressLine(1);
+            }
+        }
+        catch(Exception ex)
+        {
+            Log.d("Error", ex.getMessage());
+        }
+
+        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(""+post));
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
         mMap.animateCamera(cameraUpdate);
