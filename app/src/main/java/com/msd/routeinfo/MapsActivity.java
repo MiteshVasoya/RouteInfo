@@ -80,9 +80,8 @@ public class MapsActivity extends FragmentActivity {
         LatLng coordinate = new LatLng(lat, lng);
 
         mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title("My Location"));
-        CameraUpdate center=
-                CameraUpdateFactory.newLatLng(new LatLng(lat, lng));
-        CameraUpdate zoom=CameraUpdateFactory.zoomTo(7);
+        CameraUpdate center= CameraUpdateFactory.newLatLng(new LatLng(lat, lng));
+        CameraUpdate zoom=CameraUpdateFactory.zoomTo(10);
 
         mMap.moveCamera(center);
         mMap.animateCamera(zoom);
