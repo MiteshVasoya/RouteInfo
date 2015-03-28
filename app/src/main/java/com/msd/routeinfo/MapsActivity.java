@@ -12,11 +12,12 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -39,6 +40,9 @@ public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Polyline polyline=null;
+    static double src_lat,src_lng;
+    static LatLngBounds.Builder bounds;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,15 +100,15 @@ public class MapsActivity extends FragmentActivity {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         String provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
-        double lat =  location.getLatitude();
-        double lng = location.getLongitude();
-        LatLng coordinate = new LatLng(lat, lng);
+        src_lat =  location.getLatitude();
+        src_lng = location.getLongitude();
+        LatLng coordinate = new LatLng(src_lat, src_lng);
 
         String post = "";
         Geocoder code=new Geocoder(MapsActivity.this);
         try
         {
-            List<Address> addresses = code.getFromLocation(lat,lng, 1);
+            List<Address> addresses = code.getFromLocation(src_lat, src_lng, 1);
             if(addresses.size() >0)
             {
                 Address add=new Address(Locale.getDefault());
@@ -117,15 +121,10 @@ public class MapsActivity extends FragmentActivity {
             Log.d("Error", ex.getMessage());
         }
 
-        mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(""+post));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(src_lat, src_lng)).title(""+post));
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
-        mMap.animateCamera(cameraUpdate);
-
-
-
-        LatLng l1=new LatLng(39.756782, -84.079473);
-        LatLng l2=new LatLng(39.1000, -84.5167);
+        //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 12);
+        //mMap.animateCamera(cameraUpdate);
 
      /*   PolylineOptions rectOptions = new PolylineOptions()
                 .add(l1)
@@ -157,14 +156,28 @@ public class MapsActivity extends FragmentActivity {
                          .add(source.get(i),
                                  destination.get(i))
                          .width(5).color(Color.BLUE).geodesic(true));
-
              }
 
+            bounds = new LatLngBounds.Builder();
+            bounds.include(new LatLng(src_lat, src_lng));
+            bounds.include(new LatLng(39.1000, -84.5167));
+            //set bounds with all the map points
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 150));
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(src_lat, src_lng))      // Sets the center of the map to Mountain View
+                    .zoom(20)                   // Sets the zoom
+                    .bearing(90)                // Sets the orientation of the camera to east
+                    .tilt(60)                   // Sets the tilt of the camera to 30 degrees
+                    .build();
+
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            //LatLngBounds latLngBounds = new LatLngBounds(new LatLng(src_lat, src_lng), new LatLng(39.1000, -84.5167));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
 
         }
         @Override
         protected Void doInBackground(Void... voids) {
-        LatLng l1=new LatLng(39.756782, -84.079473);
+        LatLng l1=new LatLng(src_lat, src_lng);
         LatLng l2=new LatLng(39.1000, -84.5167);
 
         String url = "http://maps.googleapis.com/maps/api/directions/json?"

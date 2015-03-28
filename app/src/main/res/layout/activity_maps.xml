@@ -1,4 +1,68 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/map_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:id="@+id/map" tools:context=".MapsActivity"
     android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+    <RelativeLayout
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:id="@+id/search_bar">
+        <LinearLayout
+            android:id="@+id/source_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60dp"
+            android:layout_marginRight="60dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/source"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:background="#ffffff"
+                android:alpha="0.7"
+                android:textSize="36sp"
+                android:textColor="#000000"
+                android:hint="Start point"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/source_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:text="X" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/destination_main"
+            android:layout_below="@id/source_main"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60dp"
+            android:layout_marginRight="60dp" >
+
+            <EditText
+                android:id="@+id/destination"
+                android:layout_marginTop="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:background="#ffffff"
+                android:alpha="0.7"
+                android:textSize="36sp"
+                android:textColor="#000000"
+                android:hint="End point"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>
