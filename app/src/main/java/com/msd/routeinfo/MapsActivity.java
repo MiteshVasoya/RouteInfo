@@ -1,6 +1,7 @@
 package com.msd.routeinfo;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -17,6 +18,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -28,13 +31,14 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-
+    private Polyline polyline=null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,18 +123,45 @@ public class MapsActivity extends FragmentActivity {
         mMap.animateCamera(cameraUpdate);
 
 
-        LatLng l1=new LatLng(39.756782, -84.079473);
-        LatLng l2=new LatLng(39.1000, 84.5167);
 
-        getDocument gd=new getDocument();
-       gd.execute();
+        LatLng l1=new LatLng(39.756782, -84.079473);
+        LatLng l2=new LatLng(39.1000, -84.5167);
+
+     /*   PolylineOptions rectOptions = new PolylineOptions()
+                .add(l1)
+                .add(l2)  // North of the previous point, but at the same longitude
+                    ; // Closes the polyline.
+
+// Get back the mutable Polyline
+
+        polyline = mMap.addPolyline(rectOptions);
+        */
+        GetDocument gd=new GetDocument();
+        gd.execute();
+
     }
 
 
 
 
-    private class getDocument extends AsyncTask<Void,Void,Void>{//(LatLng start, LatLng end, String mode) {
+    private class GetDocument extends AsyncTask<Void,Void,Void>{//(LatLng start, LatLng end, String mode) {
 
+        ArrayList<LatLng> source=new ArrayList<LatLng>();
+        ArrayList<LatLng> destination=new ArrayList<LatLng>();
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+               Log.d("","Path size"+source.size());
+             for(int i=0;i<source.size();i++) {
+                 polyline = mMap.addPolyline(new PolylineOptions()
+                         .add(source.get(i),
+                                 destination.get(i))
+                         .width(5).color(Color.BLUE).geodesic(true));
+
+             }
+
+
+        }
         @Override
         protected Void doInBackground(Void... voids) {
         LatLng l1=new LatLng(39.756782, -84.079473);
@@ -161,16 +192,20 @@ public class MapsActivity extends FragmentActivity {
                 // RETRIEVE EACH JSON OBJECT'S FIELDS
                 JSONArray obj;
                 obj = jo.getJSONArray("routes");
-                jo=obj.getJSONObject(0);
-                obj=jo.getJSONArray("legs");
-                jo=obj.getJSONObject(0);
-                String tmp=jo.getString("end_address");
-                Log.e("end",tmp);
+            JSONObject routes = obj.getJSONObject(0);
+            JSONObject overviewPolylines = routes
+                    .getJSONObject("overview_polyline");
+            String encodedString = overviewPolylines.getString("points");
+            List<LatLng> list = decodePoly(encodedString);
 
-/*                String tmp=
-                for (int j = 0; j <obj.length() ; j++) {
-                    Log.e("hii",obj.);
-                }*/
+            for (int z = 0; z < list.size() - 1; z++) {
+                LatLng src = list.get(z);
+                LatLng dest = list.get(z + 1);
+
+                source.add(src);
+                destination.add(dest);
+
+            }
 
                 // CONVERT DATA FIELDS TO CLUB OBJECT
         //    }
@@ -184,6 +219,44 @@ public class MapsActivity extends FragmentActivity {
 
 
             return null;
+        }
+
+
+
+
+
+        private List<LatLng> decodePoly(String encoded) {
+
+            List<LatLng> poly = new ArrayList<LatLng>();
+            int index = 0, len = encoded.length();
+            int lat = 0, lng = 0;
+
+            while (index < len) {
+                int b, shift = 0, result = 0;
+                do {
+                    b = encoded.charAt(index++) - 63;
+                    result |= (b & 0x1f) << shift;
+                    shift += 5;
+                } while (b >= 0x20);
+                int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+                lat += dlat;
+
+                shift = 0;
+                result = 0;
+                do {
+                    b = encoded.charAt(index++) - 63;
+                    result |= (b & 0x1f) << shift;
+                    shift += 5;
+                } while (b >= 0x20);
+                int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+                lng += dlng;
+
+                LatLng p = new LatLng((((double) lat / 1E5)),
+                        (((double) lng / 1E5)));
+                poly.add(p);
+            }
+
+            return poly;
         }
     }
 }
