@@ -6,8 +6,9 @@ import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.support.v4.app.FragmentActivity;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -16,6 +17,16 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Locale;
@@ -106,5 +117,73 @@ public class MapsActivity extends FragmentActivity {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
         mMap.animateCamera(cameraUpdate);
+
+
+        LatLng l1=new LatLng(39.756782, -84.079473);
+        LatLng l2=new LatLng(39.1000, 84.5167);
+
+        getDocument gd=new getDocument();
+       gd.execute();
+    }
+
+
+
+
+    private class getDocument extends AsyncTask<Void,Void,Void>{//(LatLng start, LatLng end, String mode) {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+        LatLng l1=new LatLng(39.756782, -84.079473);
+        LatLng l2=new LatLng(39.1000, -84.5167);
+
+        String url = "http://maps.googleapis.com/maps/api/directions/json?"
+                + "origin=" + l1.latitude + "," + l1.longitude
+                + "&destination=" + l2.latitude + "," + l2.longitude
+                + "&sensor=false&units=miles&mode=driving";
+           //     +"&key=AIzaSyCKNov_-AGmJgzewm4bYog-byOaCFBZxsE";
+//        Log.d("url", url);
+        try {
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpContext localContext = new BasicHttpContext();
+            HttpPost httpPost = new HttpPost(url);
+            HttpResponse response = httpClient.execute(httpPost, localContext);
+            String result = EntityUtils.toString(response.getEntity());
+            //  InputStream in = response.getEntity().getContent();
+            Log.e("r","Response "+result);
+          //  JSONArray ja = new JSONArray(result);
+            JSONObject jo=new JSONObject(result);
+            int n = jo.length();
+            Log.e("r","Result Response: "+result);
+       //     for (int i = 0; i < n; i++) {
+                // GET INDIVIDUAL JSON OBJECT FROM JSON ARRAY
+              //  JSONObject jo = ja.getJSONObject(i);
+
+                // RETRIEVE EACH JSON OBJECT'S FIELDS
+                JSONArray obj;
+                obj = jo.getJSONArray("routes");
+                jo=obj.getJSONObject(0);
+                obj=jo.getJSONArray("legs");
+                jo=obj.getJSONObject(0);
+                String tmp=jo.getString("end_address");
+                Log.e("end",tmp);
+
+/*                String tmp=
+                for (int j = 0; j <obj.length() ; j++) {
+                    Log.e("hii",obj.);
+                }*/
+
+                // CONVERT DATA FIELDS TO CLUB OBJECT
+        //    }
+
+
+            // 39.1000, 84.5167
+
+        } catch (Exception e) {
+            System.out.println("Exception mine: "+e);
+        }
+
+
+            return null;
+        }
     }
 }
