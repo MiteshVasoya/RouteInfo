@@ -11,10 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -46,34 +42,12 @@ public class MapsActivity extends FragmentActivity {
     private Polyline polyline=null;
     static double src_lat,src_lng;
     static LatLngBounds.Builder bounds;
-    EditText source_et,destination_et;
-    Button source_cancel,destination_cancel;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
-
-        source_et = (EditText)findViewById(R.id.source);
-        source_cancel = (Button)findViewById(R.id.source_cancel);
-        source_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                source_et.setText("");
-            }
-        });
-        destination_et = (EditText)findViewById(R.id.destination);
-        destination_cancel = (Button)findViewById(R.id.destination_cancel);
-        destination_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                destination_et.setText("");
-            }
-        });
-
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
     @Override
@@ -103,7 +77,7 @@ public class MapsActivity extends FragmentActivity {
             // Try to obtain the map from the SupportMapFragment.
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
-            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+            mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
             mMap.setMyLocationEnabled(true);
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
@@ -148,17 +122,7 @@ public class MapsActivity extends FragmentActivity {
         }
 
         mMap.addMarker(new MarkerOptions().position(new LatLng(src_lat, src_lng)).title(""+post));
-
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(src_lat, src_lng))      // Sets the center of the map to Mountain View
-                .zoom(10)                   // Sets the zoom
-                .bearing(90)                // Sets the orientation of the camera to east
-                .tilt(0)                   // Sets the tilt of the camera to 30 degrees
-                .build();
-
-              mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
         //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 12);
         //mMap.animateCamera(cameraUpdate);
 
@@ -191,11 +155,22 @@ public class MapsActivity extends FragmentActivity {
                  polyline = mMap.addPolyline(new PolylineOptions()
                          .add(source.get(i),
                                  destination.get(i))
-                         .width(20).color(Color.BLUE).geodesic(true));
+                         .width(5).color(Color.BLUE).geodesic(true));
              }
 
-
+            bounds = new LatLngBounds.Builder();
+            bounds.include(new LatLng(src_lat, src_lng));
+            bounds.include(new LatLng(39.1000, -84.5167));
+            //set bounds with all the map points
             //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 150));
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(src_lat, src_lng))      // Sets the center of the map to Mountain View
+                    .zoom(20)                   // Sets the zoom
+                    .bearing(90)                // Sets the orientation of the camera to east
+                    .tilt(60)                   // Sets the tilt of the camera to 30 degrees
+                    .build();
+
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             //LatLngBounds latLngBounds = new LatLngBounds(new LatLng(src_lat, src_lng), new LatLng(39.1000, -84.5167));
             //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
 
