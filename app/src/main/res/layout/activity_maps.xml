@@ -3,10 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:id="@+id/map" tools:context=".MapsActivity"
-    android:name="com.google.android.gms.maps.SupportMapFragment" />
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:id="@+id/map" tools:context=".MapsActivity"
+        android:name="com.google.android.gms.maps.SupportMapFragment" />
 
     <RelativeLayout
         android:layout_marginTop="10dp"
@@ -14,36 +14,38 @@
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         android:id="@+id/search_bar">
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/source_main"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="60dp"
-            android:layout_marginRight="60dp"
-            android:orientation="horizontal">
+            android:layout_marginRight="60dp">
 
             <EditText
                 android:id="@+id/source"
                 android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:background="#ffffff"
+                android:paddingRight="43dp"
+                android:background="@drawable/rounded_edittext"
                 android:alpha="0.7"
+                android:textStyle="bold"
                 android:textSize="36sp"
                 android:textColor="#000000"
-                android:hint="Start point"
+                android:lines="1"
+                android:singleLine="true"
+                android:hint="Start Point"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/source_cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="right"
-                android:text="X" />
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="right|center"
+                android:background="@drawable/button_cancel"/>
 
-        </LinearLayout>
+        </FrameLayout>
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/destination_main"
             android:layout_below="@id/source_main"
             android:layout_width="fill_parent"
@@ -55,14 +57,24 @@
                 android:id="@+id/destination"
                 android:layout_marginTop="5dp"
                 android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:background="#ffffff"
+                android:paddingRight="43dp"
+                android:background="@drawable/rounded_edittext"
                 android:alpha="0.7"
+                android:textStyle="bold"
                 android:textSize="36sp"
                 android:textColor="#000000"
-                android:hint="End point"
+                android:lines="1"
+                android:singleLine="true"
+                android:hint="End Point"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-        </LinearLayout>
+
+            <Button
+                android:id="@+id/destination_cancel"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="right|center"
+                android:background="@drawable/button_cancel"/>
+        </FrameLayout>
     </RelativeLayout>
 </RelativeLayout>
