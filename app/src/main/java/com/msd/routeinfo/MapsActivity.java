@@ -64,6 +64,7 @@ public class MapsActivity extends FragmentActivity {
                 source_et.setText("");
             }
         });
+        
         destination_et = (EditText)findViewById(R.id.destination);
         destination_cancel = (Button)findViewById(R.id.destination_cancel);
         destination_cancel.setOnClickListener(new View.OnClickListener() {
