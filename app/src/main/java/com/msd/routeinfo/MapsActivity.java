@@ -146,14 +146,14 @@ public class MapsActivity extends FragmentActivity {
         {
             Log.d("Error", ex.getMessage());
         }
-
+        //snehit
         mMap.addMarker(new MarkerOptions().position(new LatLng(src_lat, src_lng)).title(""+post));
 
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(src_lat, src_lng))      // Sets the center of the map to Mountain View
                 .zoom(10)                   // Sets the zoom
-                .bearing(90)                // Sets the orientation of the camera to east
+                .bearing(0)                // Sets the orientation of the camera to east
                 .tilt(0)                   // Sets the tilt of the camera to 30 degrees
                 .build();
 
