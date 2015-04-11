@@ -1,5 +1,6 @@
 package com.msd.routeinfo;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Address;
@@ -8,14 +9,17 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -48,16 +52,20 @@ public class MapsActivity extends FragmentActivity {
     static LatLngBounds.Builder bounds;
     EditText source_et,destination_et;
     Button source_cancel,destination_cancel;
+    static String post = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        setUpMapIfNeeded();
+
 
         source_et = (EditText)findViewById(R.id.source);
         source_cancel = (Button)findViewById(R.id.source_cancel);
+
+
+
         source_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,13 +82,27 @@ public class MapsActivity extends FragmentActivity {
             }
         });
 
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+        onResumeSetAll();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        onResumeSetAll();
+    }
+
+    public void onResumeSetAll(){
         setUpMapIfNeeded();
+
+        String post=getAddress(src_lat,src_lng);
+
+        if(!post.equals("")) {
+            source_et.setText(post);
+            destination_et.requestFocus();
+        }
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
     /**
@@ -119,6 +141,33 @@ public class MapsActivity extends FragmentActivity {
      * <p/>
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
+
+        public String getAddress(double lat,double lng)
+        {
+            String post = "";
+            Geocoder code=new Geocoder(MapsActivity.this);
+            try
+            {
+
+                List<Address> addresses = code.getFromLocation(src_lat, src_lng, 1);
+                Address add;
+                if(addresses.size() >0)
+                {
+                    add=new Address(Locale.getDefault());
+                    add=addresses.get(0);
+                    post= add.getAddressLine(0)+", "+add.getAddressLine(1);
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.d("Error", ex.getMessage());
+            }
+
+            return post;
+        }
+
+
+
     private void setUpMap() {
 
         //39.756782, -84.079473
@@ -131,22 +180,9 @@ public class MapsActivity extends FragmentActivity {
         src_lng = location.getLongitude();
         LatLng coordinate = new LatLng(src_lat, src_lng);
 
-        String post = "";
-        Geocoder code=new Geocoder(MapsActivity.this);
-        try
-        {
-            List<Address> addresses = code.getFromLocation(src_lat, src_lng, 1);
-            if(addresses.size() >0)
-            {
-                Address add=new Address(Locale.getDefault());
-                add=addresses.get(0);
-                post= add.getAddressLine(0)+", "+add.getAddressLine(1);
-            }
-        }
-        catch(Exception ex)
-        {
-            Log.d("Error", ex.getMessage());
-        }
+
+        String post=getAddress(src_lat,src_lng);
+
 
         mMap.addMarker(new MarkerOptions().position(new LatLng(src_lat, src_lng)).title(""+post));
 
@@ -196,6 +232,52 @@ public class MapsActivity extends FragmentActivity {
              }
 
 
+            bounds = new LatLngBounds.Builder();
+            bounds.include(new LatLng(src_lat, src_lng));
+            bounds.include(new LatLng(39.1000, -84.5167));
+            //set bounds with all the map points
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 150));
+           /* CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(src_lat,src_lng))// Sets the center of the map to Mountain View
+                    .zoom(10)                   // Sets the zoom
+                    .bearing(0)                // Sets the orientation of the camera to east
+                    .tilt(0)                   // Sets the tilt of the camera to 30 degrees
+                    .build();
+
+          */
+
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds.build(),250);
+          //  LatLngBounds latLngBounds = new LatLngBounds(new LatLng(src_lat, src_lng), new LatLng(39.77961052, -84.5167));
+           // mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,0));
+
+            try {
+                mMap.animateCamera(cu);
+            }
+            catch(Exception e)
+            {
+                final View mapView = getFragmentManager()
+                        .findFragmentById(R.id.map).getView();
+                if (mapView.getViewTreeObserver().isAlive()) {
+                    mapView.getViewTreeObserver().addOnGlobalLayoutListener(
+                            new ViewTreeObserver.OnGlobalLayoutListener() {
+                                @SuppressWarnings("deprecation")
+                                @SuppressLint("NewApi")
+                                // We check which build version we are using.
+                                @Override
+                                public void onGlobalLayout() {
+                                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                                        mapView.getViewTreeObserver()
+                                                .removeGlobalOnLayoutListener(this);
+                                    } else {
+                                        mapView.getViewTreeObserver()
+                                                .removeOnGlobalLayoutListener(this);
+                                    }
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(),250));
+                                }
+                            });
+                }
+
+            }
             //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 150));
             //LatLngBounds latLngBounds = new LatLngBounds(new LatLng(src_lat, src_lng), new LatLng(39.1000, -84.5167));
             //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
@@ -298,4 +380,9 @@ public class MapsActivity extends FragmentActivity {
             return poly;
         }
     }
+
+
+
+
+
 }
