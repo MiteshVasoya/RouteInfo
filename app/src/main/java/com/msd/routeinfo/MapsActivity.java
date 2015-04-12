@@ -16,6 +16,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -51,7 +52,7 @@ public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Polyline polyline=null;
-    static double src_lat,src_lng;
+    static double src_lat,src_lng,dest_lat=39.1000,dest_lng=-84.5167;
     static LatLngBounds.Builder bounds;
     EditText source_et,destination_et;
     Button source_cancel,destination_cancel;
@@ -151,6 +152,20 @@ public class MapsActivity extends FragmentActivity {
                             Log.d("check","working");
                             dest_autoCompleteTextView.setThreshold(1);
                             dest_autoCompleteTextView.setAdapter(adapter);
+                            dest_autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                    String destAddr= dest_autoCompleteTextView.getText().toString();
+                                    GeoPoint gpD = getLocationFromAddress(destAddr);
+
+                                    if (gpD != null) {
+                                        dest_lat = gpD.getLatitudeE6();
+                                        dest_lng = gpD.getLongitudeE6();
+                                        Log.e("Lat: "+dest_lat,"Long :"+dest_lng);
+                                    }
+                                    setUpMapIfNeeded();
+                                }
+                            });
                         }
                     }, 200); //300
 
@@ -337,7 +352,7 @@ public class MapsActivity extends FragmentActivity {
 
             bounds = new LatLngBounds.Builder();
             bounds.include(new LatLng(src_lat, src_lng));
-            bounds.include(new LatLng(39.1000, -84.5167));
+            bounds.include(new LatLng(dest_lat, dest_lng));
             //set bounds with all the map points
             //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 150));
            /* CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -365,7 +380,7 @@ public class MapsActivity extends FragmentActivity {
         @Override
         protected Void doInBackground(Void... voids) {
         LatLng l1=new LatLng(src_lat, src_lng);
-        LatLng l2=new LatLng(39.1000, -84.5167);
+        LatLng l2=new LatLng(dest_lat, dest_lng);
 
         String url = "http://maps.googleapis.com/maps/api/directions/json?"
                 + "origin=" + l1.latitude + "," + l1.longitude
