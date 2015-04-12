@@ -52,7 +52,7 @@ public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Polyline polyline=null;
-    static double src_lat,src_lng,dest_lat=39.1000,dest_lng=-84.5167;
+    static double src_lat,src_lng,dest_lat,dest_lng,temp_lat,temp_lng;
     static LatLngBounds.Builder bounds;
     EditText source_et,destination_et;
     Button source_cancel,destination_cancel;
@@ -117,6 +117,21 @@ public class MapsActivity extends FragmentActivity {
                             Log.d("check","working");
                             src_autoCompleteTextView.setThreshold(1);
                             src_autoCompleteTextView.setAdapter(adapter);
+                            src_autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                    String srcAddr= src_autoCompleteTextView.getText().toString();
+                                    Log.e("src address",""+srcAddr);
+                                    GeoPoint gpS = getLocationFromAddress(srcAddr);
+
+                                    if (gpS != null) {
+                                        src_lat = temp_lat;
+                                        src_lng = temp_lng;
+                                    }
+                                    if(!dest_autoCompleteTextView.getText().toString().equals(""))
+                                        setUpMap(src_lat,src_lng);
+                                }
+                            });
                         }
                     }, 200); //300
                 }
@@ -156,14 +171,15 @@ public class MapsActivity extends FragmentActivity {
                                 @Override
                                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                                     String destAddr= dest_autoCompleteTextView.getText().toString();
+                                    Log.e("dest address",""+destAddr);
                                     GeoPoint gpD = getLocationFromAddress(destAddr);
 
                                     if (gpD != null) {
-                                        dest_lat = gpD.getLatitudeE6();
-                                        dest_lng = gpD.getLongitudeE6();
-                                        Log.e("Lat: "+dest_lat,"Long :"+dest_lng);
+                                        dest_lat = temp_lat;
+                                        dest_lng = temp_lng;
                                     }
-                                    setUpMapIfNeeded();
+                                    if(!src_autoCompleteTextView.getText().toString().equals(""))
+                                        setUpMap(src_lat,src_lng);
                                 }
                             });
                         }
@@ -182,6 +198,12 @@ public class MapsActivity extends FragmentActivity {
             }
         });
 
+        Criteria criteria = new Criteria();
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        String provider = locationManager.getBestProvider(criteria, false);
+        Location location = locationManager.getLastKnownLocation(provider);
+        src_lat =  location.getLatitude();
+        src_lng = location.getLongitude();
         setUpMapIfNeeded();
 
         String post = getAddress(src_lat, src_lng);
@@ -212,7 +234,7 @@ public class MapsActivity extends FragmentActivity {
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
+     * call  once when {@link #mMap} is not null.
      * <p/>
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
@@ -234,7 +256,7 @@ public class MapsActivity extends FragmentActivity {
             mMap.setMyLocationEnabled(true);
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
-                setUpMap();
+                setUpMap(src_lat,src_lng);
             }
         }
     }
@@ -253,7 +275,7 @@ public class MapsActivity extends FragmentActivity {
             try
             {
 
-                List<Address> addresses = code.getFromLocation(src_lat, src_lng, 1);
+                List<Address> addresses = code.getFromLocation(lat, lng, 1);
                 Address add;
                 if(addresses.size() >0)
                 {
@@ -272,27 +294,23 @@ public class MapsActivity extends FragmentActivity {
 
 
 
-    private void setUpMap() {
+    private void setUpMap(double src_latitude,double src_longitude) {
 
-        //39.756782, -84.079473
-
-        Criteria criteria = new Criteria();
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        String provider = locationManager.getBestProvider(criteria, false);
-        Location location = locationManager.getLastKnownLocation(provider);
-        src_lat =  location.getLatitude();
-        src_lng = location.getLongitude();
-        LatLng coordinate = new LatLng(src_lat, src_lng);
+        mMap.clear();
+        LatLng coordinate = new LatLng(src_latitude, src_longitude);
 
 
-        String post=getAddress(src_lat,src_lng);
+        String post=getAddress(src_latitude,src_longitude);
 
 
-        mMap.addMarker(new MarkerOptions().position(new LatLng(src_lat, src_lng)).title(""+post));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(src_latitude, src_longitude)).title(""+getAddress(src_latitude,src_longitude)));
+        if(dest_lat!= 0 && dest_lng!= 0) {
+            mMap.addMarker(new MarkerOptions().position(new LatLng(dest_lat, dest_lng)).title(""+getAddress(dest_lat,dest_lng)));
+        }
 
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        LatLng latLng = new LatLng(src_latitude, src_longitude);
         CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(src_lat, src_lng))      // Sets the center of the map to Mountain View
+                .target(new LatLng(src_latitude, src_longitude))      // Sets the center of the map to Mountain View
                 .zoom(10)                   // Sets the zoom
                 .bearing(90)                // Sets the orientation of the camera to east
                 .tilt(0)                   // Sets the tilt of the camera to 30 degrees
@@ -353,6 +371,8 @@ public class MapsActivity extends FragmentActivity {
             bounds = new LatLngBounds.Builder();
             bounds.include(new LatLng(src_lat, src_lng));
             bounds.include(new LatLng(dest_lat, dest_lng));
+            Log.e("src lat: "+src_lat,"src lng: "+src_lng);
+            Log.e("dest lat: "+dest_lat,"dest lng: "+dest_lng);
             //set bounds with all the map points
             //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 150));
            /* CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -491,8 +511,9 @@ public class MapsActivity extends FragmentActivity {
                 return null;
             }
             Address location = address.get(0);
-            location.getLatitude();
-            location.getLongitude();
+            temp_lat = location.getLatitude();
+            temp_lng = location.getLongitude();
+            Log.e("<"+temp_lat,temp_lng+">");
             Log.d(location.getLatitude()+"",location.getLongitude()+"");
             p1 = new GeoPoint((int) (location.getLatitude() * 1E6),
                     (int) (location.getLongitude() * 1E6));
