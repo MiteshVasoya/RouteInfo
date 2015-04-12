@@ -192,11 +192,11 @@ public class MapsActivity extends FragmentActivity {
         }
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        String dest = "3286 Loomis Road Cincinnati, KY";
+        //String dest = "3286 Loomis Road Cincinnati, KY";
 
-        GeoPoint gp1 = getLocationFromAddress(dest);
+        //GeoPoint gp1 = getLocationFromAddress(dest);
 
-        if (gp1 != null);
+        //if (gp1 != null);
             //destination_et.setText(gp1.getLatitudeE6() + "" + gp1.getLongitudeE6());
 
         //searchString=dest;
