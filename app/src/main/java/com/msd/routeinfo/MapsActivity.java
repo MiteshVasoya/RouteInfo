@@ -9,10 +9,15 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -50,8 +55,10 @@ public class MapsActivity extends FragmentActivity {
     static LatLngBounds.Builder bounds;
     EditText source_et,destination_et;
     Button source_cancel,destination_cancel;
-    static String post = null;
+    static String post = null,searchString;
+    String[] resultList;
     static  Bundle localSavedInstanceState;
+    AutoCompleteTextView src_autoCompleteTextView,dest_autoCompleteTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,35 +66,114 @@ public class MapsActivity extends FragmentActivity {
         localSavedInstanceState = savedInstanceState;
         setContentView(R.layout.activity_maps);
 
+        src_autoCompleteTextView = (AutoCompleteTextView)
+                findViewById(R.id.source);
+        dest_autoCompleteTextView = (AutoCompleteTextView)
+                findViewById(R.id.destination);
 
-        source_et = (EditText) findViewById(R.id.source);
         source_cancel = (Button) findViewById(R.id.source_cancel);
-
-
         source_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                source_et.setText("");
+                src_autoCompleteTextView.setText("");
             }
         });
 
-        destination_et = (EditText) findViewById(R.id.destination);
         destination_cancel = (Button) findViewById(R.id.destination_cancel);
         destination_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                destination_et.setText("");
+                dest_autoCompleteTextView.setText("");
             }
         });
 
+        src_autoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if((searchString = editable.toString()) != null) {
+                    searchString = editable.toString();
+                    Log.e("text Change",""+searchString);
+                    new PlacesService().execute();
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Do something after 5s = 5000ms
+                            for (int i = 0; i < PlacesService.resultList.length; i++) {
+                                Log.e("result("+i+") ",PlacesService.resultList[i]);
+                            }
+                            ArrayAdapter adapter = new ArrayAdapter(MapsActivity.this, android.R.layout.select_dialog_item, PlacesService.resultList);
+                            Log.d("check","working");
+                            src_autoCompleteTextView.setThreshold(1);
+                            src_autoCompleteTextView.setAdapter(adapter);
+                        }
+                    }, 200); //300
+                }
+            }
+        });
+
+        dest_autoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if((searchString = editable.toString()) != null) {
+                    searchString = editable.toString();
+                    Log.e("text Change",""+searchString);
+                    new PlacesService().execute();
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Do something after 5s = 5000ms
+                            for (int i = 0; i < PlacesService.resultList.length; i++) {
+                                Log.e("result("+i+") ",PlacesService.resultList[i]);
+                            }
+                            ArrayAdapter adapter = new ArrayAdapter(MapsActivity.this, android.R.layout.select_dialog_item, PlacesService.resultList);
+                            Log.d("check","working");
+                            dest_autoCompleteTextView.setThreshold(1);
+                            dest_autoCompleteTextView.setAdapter(adapter);
+                        }
+                    }, 200); //300
+
+                    /*if(PlacesService.resultList.length < 0) {
+                        for (int i = 0; i < PlacesService.resultList.length; i++) {
+                            Log.e("result("+i+") ",PlacesService.resultList[i]);
+                        }
+                        ArrayAdapter adapter = new ArrayAdapter(MapsActivity.this, android.R.layout.select_dialog_item, PlacesService.resultList);
+                        Log.d("check","working");
+                        src_autoCompleteTextView.setThreshold(1);
+                        src_autoCompleteTextView.setAdapter(adapter);
+                    }*/
+                }
+            }
+        });
 
         setUpMapIfNeeded();
 
         String post = getAddress(src_lat, src_lng);
 
         if (!post.equals("")) {
-            source_et.setText(post);
-            destination_et.requestFocus();
+            src_autoCompleteTextView.setText(post);
+            dest_autoCompleteTextView.requestFocus();
         }
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
@@ -95,10 +181,11 @@ public class MapsActivity extends FragmentActivity {
 
         GeoPoint gp1 = getLocationFromAddress(dest);
 
-        if (gp1 != null)
-            destination_et.setText(gp1.getLatitudeE6() + "" + gp1.getLongitudeE6());
+        if (gp1 != null);
+            //destination_et.setText(gp1.getLatitudeE6() + "" + gp1.getLongitudeE6());
 
-        new PlacesService().execute();
+        //searchString=dest;
+        //new PlacesService().execute();
     }
 
     @Override

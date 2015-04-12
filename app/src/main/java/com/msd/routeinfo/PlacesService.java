@@ -13,12 +13,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 /**
  * @author saxman
  */
-public class PlacesService extends AsyncTask<Void,Void,Void>{
+public class PlacesService extends AsyncTask<Void,Void,String[]>{
     private static final String LOG_TAG = "ExampleApp";
 
     private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
@@ -31,6 +30,8 @@ public class PlacesService extends AsyncTask<Void,Void,Void>{
 
     // KEY!
     private static final String API_KEY = "AIzaSyAtS8vNbRoo8pQwqS7Y0cfXvDzshUbc5ik";
+
+    public static String[] resultList;
     /*
     public static ArrayList<Place> autocomplete(String input) {
         ArrayList<Place> resultList = null;
@@ -86,8 +87,7 @@ public class PlacesService extends AsyncTask<Void,Void,Void>{
         return resultList;
     }
     */
-    public static ArrayList<String> search(String input, double lat, double lng, int radius) {
-        ArrayList<String> resultList = null;
+    public static void search(String input, double lat, double lng, int radius) {
 
         HttpURLConnection conn = null;
         StringBuilder jsonResults = new StringBuilder();
@@ -116,10 +116,10 @@ public class PlacesService extends AsyncTask<Void,Void,Void>{
             }
         } catch (MalformedURLException e) {
             Log.e(LOG_TAG, "Error processing Places API URL", e);
-            return resultList;
+            //return resultList;
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error connecting to Places API", e);
-            return resultList;
+            //return resultList;
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -132,26 +132,30 @@ public class PlacesService extends AsyncTask<Void,Void,Void>{
             JSONArray predsJsonArray = jsonObj.getJSONArray("predictions");
 
             // Extract the Place descriptions from the results
-            resultList = new ArrayList<String>(predsJsonArray.length());
+            //resultList = new ArrayList<String>(predsJsonArray.length());
+            resultList = new String[predsJsonArray.length()];
+
             for (int i = 0; i < predsJsonArray.length(); i++) {
 
                 String description=predsJsonArray.getJSONObject(i).getString("description");
+                resultList[i] = description;
+                //Log.e("Places",description);
 
-                Log.e("Places",description);
-
+            }
+            for (int i = 0; i < resultList.length; i++) {
+                Log.e("result Array"+i,resultList[i]);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Error processing JSON results", e);
         }
 
-        return resultList;
     }
 
     @Override
-    protected Void doInBackground(Void... voids) {
-
-        search("Duncan",MapsActivity.src_lat,MapsActivity.src_lng,500);
-        return null;
+    protected String[] doInBackground(Void... voids) {
+        Log.e("search str",""+MapsActivity.searchString);
+        search(MapsActivity.searchString,MapsActivity.src_lat,MapsActivity.src_lng,500);
+        return resultList;
     }
     /*
     public static Place details(String reference) {
