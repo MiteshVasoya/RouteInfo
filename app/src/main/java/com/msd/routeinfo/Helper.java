@@ -1,8 +1,11 @@
 package com.msd.routeinfo;
 
+import android.location.Geocoder;
 import android.util.Log;
 
+
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.maps.GeoPoint;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -16,8 +19,10 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import android.location.Address;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by snehitgajjar on 3/27/15.
@@ -271,5 +276,13 @@ public class Helper {
         }
         return poly;
     }
+
+
+    /**
+     *  convert address into latitude and longitude.
+     */
+
+
+
 
 }

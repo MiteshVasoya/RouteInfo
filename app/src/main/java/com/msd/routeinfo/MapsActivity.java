@@ -1,6 +1,5 @@
 package com.msd.routeinfo;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Address;
@@ -9,12 +8,10 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,6 +26,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.maps.GeoPoint;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -53,17 +51,17 @@ public class MapsActivity extends FragmentActivity {
     EditText source_et,destination_et;
     Button source_cancel,destination_cancel;
     static String post = null;
-
+    static  Bundle localSavedInstanceState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        localSavedInstanceState = savedInstanceState;
         setContentView(R.layout.activity_maps);
 
 
-        source_et = (EditText)findViewById(R.id.source);
-        source_cancel = (Button)findViewById(R.id.source_cancel);
-
+        source_et = (EditText) findViewById(R.id.source);
+        source_cancel = (Button) findViewById(R.id.source_cancel);
 
 
         source_cancel.setOnClickListener(new View.OnClickListener() {
@@ -72,9 +70,9 @@ public class MapsActivity extends FragmentActivity {
                 source_et.setText("");
             }
         });
-        
-        destination_et = (EditText)findViewById(R.id.destination);
-        destination_cancel = (Button)findViewById(R.id.destination_cancel);
+
+        destination_et = (EditText) findViewById(R.id.destination);
+        destination_cancel = (Button) findViewById(R.id.destination_cancel);
         destination_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,26 +81,30 @@ public class MapsActivity extends FragmentActivity {
         });
 
 
-        onResumeSetAll();
+        setUpMapIfNeeded();
 
+        String post = getAddress(src_lat, src_lng);
+
+        if (!post.equals("")) {
+            source_et.setText(post);
+            destination_et.requestFocus();
+        }
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+        String dest = "3286 Loomis Road Cincinnati, KY";
+
+        GeoPoint gp1 = getLocationFromAddress(dest);
+
+        if (gp1 != null)
+            destination_et.setText(gp1.getLatitudeE6() + "" + gp1.getLongitudeE6());
+
+        new PlacesService().execute();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        onResumeSetAll();
-    }
 
-    public void onResumeSetAll(){
-        setUpMapIfNeeded();
-
-        String post=getAddress(src_lat,src_lng);
-
-        if(!post.equals("")) {
-            source_et.setText(post);
-            destination_et.requestFocus();
-        }
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
     /**
@@ -218,6 +220,20 @@ public class MapsActivity extends FragmentActivity {
 
     private class GetDocument extends AsyncTask<Void,Void,Void>{//(LatLng start, LatLng end, String mode) {
 
+        private static final String LOG_TAG = "ExampleApp";
+
+        private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
+
+        private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
+        private static final String TYPE_DETAILS = "/details";
+        private static final String TYPE_SEARCH = "/search";
+
+        private static final String OUT_JSON = "/json";
+
+        // KEY!
+        private static final String API_KEY = "YOUR KEY";
+
+
         ArrayList<LatLng> source=new ArrayList<LatLng>();
         ArrayList<LatLng> destination=new ArrayList<LatLng>();
         @Override
@@ -253,34 +269,10 @@ public class MapsActivity extends FragmentActivity {
             try {
                 mMap.animateCamera(cu);
             }
-            catch(Exception e)
-            {
-                final View mapView = getFragmentManager()
-                        .findFragmentById(R.id.map).getView();
-                if (mapView.getViewTreeObserver().isAlive()) {
-                    mapView.getViewTreeObserver().addOnGlobalLayoutListener(
-                            new ViewTreeObserver.OnGlobalLayoutListener() {
-                                @SuppressWarnings("deprecation")
-                                @SuppressLint("NewApi")
-                                // We check which build version we are using.
-                                @Override
-                                public void onGlobalLayout() {
-                                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                                        mapView.getViewTreeObserver()
-                                                .removeGlobalOnLayoutListener(this);
-                                    } else {
-                                        mapView.getViewTreeObserver()
-                                                .removeOnGlobalLayoutListener(this);
-                                    }
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(),250));
-                                }
-                            });
-                }
+            catch(Exception e) {
 
+                Log.d("Exception: ",e.getMessage());
             }
-            //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 150));
-            //LatLngBounds latLngBounds = new LatLngBounds(new LatLng(src_lat, src_lng), new LatLng(39.1000, -84.5167));
-            //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
 
         }
         @Override
@@ -380,6 +372,36 @@ public class MapsActivity extends FragmentActivity {
             return poly;
         }
     }
+
+
+
+
+
+    public GeoPoint getLocationFromAddress(String strAddress) {
+
+        Geocoder coder = new Geocoder(this);
+        List<Address> address;
+        GeoPoint p1 = null;
+
+        try {
+            address = coder.getFromLocationName(strAddress, 5);
+            if (address == null) {
+                return null;
+            }
+            Address location = address.get(0);
+            location.getLatitude();
+            location.getLongitude();
+            Log.d(location.getLatitude()+"",location.getLongitude()+"");
+            p1 = new GeoPoint((int) (location.getLatitude() * 1E6),
+                    (int) (location.getLongitude() * 1E6));
+
+
+        }
+        catch(Exception e){}
+        return p1;
+    }
+
+
 
 
 
