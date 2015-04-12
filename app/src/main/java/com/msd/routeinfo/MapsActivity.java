@@ -1,12 +1,8 @@
 package com.msd.routeinfo;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -198,12 +194,25 @@ public class MapsActivity extends FragmentActivity {
             }
         });
 
-        Criteria criteria = new Criteria();
+        /*Criteria criteria = new Criteria();
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         String provider = locationManager.getBestProvider(criteria, false);
-        Location location = locationManager.getLastKnownLocation(provider);
-        src_lat =  location.getLatitude();
-        src_lng = location.getLongitude();
+        Location location = locationManager.getLastKnownLocation(provider);*/
+        GPSTracker gpsTracker = new GPSTracker(this);
+
+        if (gpsTracker.canGetLocation())
+        {
+            src_lat = gpsTracker.latitude;
+            src_lng = gpsTracker.longitude;
+        }
+        else
+        {
+            // can't get location
+            // GPS or Network is not enabled
+            // Ask user to enable GPS/network in settings
+            gpsTracker.showSettingsAlert();
+        }
+
         setUpMapIfNeeded();
 
         String post = getAddress(src_lat, src_lng);
