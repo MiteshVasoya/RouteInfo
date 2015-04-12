@@ -29,7 +29,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyCKNov_-AGmJgzewm4bYog-byOaCFBZxsE" />
+            android:value="AIzaSyC1HJmBWe22GgjRFD0N0b1iGwG4jc_XVtY" />
         <!-- Mitesh : AIzaSyC1HJmBWe22GgjRFD0N0b1iGwG4jc_XVtY
             Snehit : AIzaSyCKNov_-AGmJgzewm4bYog-byOaCFBZxsE
             Dhruv : AIzaSyASbmdtwJw9nwT4pWaKzUtPHGR8AaLxRUU -->

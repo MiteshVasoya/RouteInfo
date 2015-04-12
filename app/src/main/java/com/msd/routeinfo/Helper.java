@@ -1,11 +1,8 @@
 package com.msd.routeinfo;
 
-import android.location.Geocoder;
 import android.util.Log;
 
-
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.maps.GeoPoint;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -19,10 +16,8 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import android.location.Address;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by snehitgajjar on 3/27/15.
@@ -39,7 +34,7 @@ public class Helper {
                 + "origin=" + start.latitude + "," + start.longitude
                 + "&destination=" + end.latitude + "," + end.longitude
                 + "&sensor=false&units=metric&mode=driving"
-                +"&key=AIzaSyCKNov_-AGmJgzewm4bYog-byOaCFBZxsE";
+                +"&key=AIzaSyC1HJmBWe22GgjRFD0N0b1iGwG4jc_XVtY";
 //        Log.d("url", url);
         try {
             HttpClient httpClient = new DefaultHttpClient();

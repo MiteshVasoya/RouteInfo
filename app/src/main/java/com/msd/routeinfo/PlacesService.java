@@ -30,7 +30,7 @@ public class PlacesService extends AsyncTask<Void,Void,Void>{
     private static final String OUT_JSON = "/json";
 
     // KEY!
-    private static final String API_KEY = "AIzaSyC1HJmBWe22GgjRFD0N0b1iGwG4jc_XVtY";
+    private static final String API_KEY = "AIzaSyAtS8vNbRoo8pQwqS7Y0cfXvDzshUbc5ik";
     /*
     public static ArrayList<Place> autocomplete(String input) {
         ArrayList<Place> resultList = null;
