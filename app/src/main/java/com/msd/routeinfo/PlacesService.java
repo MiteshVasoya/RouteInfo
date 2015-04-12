@@ -29,7 +29,7 @@ public class PlacesService extends AsyncTask<Void,Void,String[]>{
     private static final String OUT_JSON = "/json";
 
     // KEY!
-    private static final String API_KEY = "AIzaSyAyx6jzhGPyv0is75TmITQMSvqV2cNoIy0";
+    private static final String API_KEY = "AIzaSyAl7nzjFyXZBOqsniWDlcb-Lz_-q2BTaKo";
 
     public static String[] resultList;
 

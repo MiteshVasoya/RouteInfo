@@ -1,5 +1,6 @@
 package com.msd.routeinfo;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -46,7 +47,7 @@ import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity {
 
-    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    public static GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Polyline polyline=null;
     static double src_lat,src_lng,dest_lat,dest_lng,temp_lat,temp_lng;
     static LatLngBounds.Builder bounds;
@@ -56,12 +57,18 @@ public class MapsActivity extends FragmentActivity {
     String[] resultList;
     static  Bundle localSavedInstanceState;
     AutoCompleteTextView src_autoCompleteTextView,dest_autoCompleteTextView;
+    public static Context ctx;
+    public static ArrayList<LatLng> source,destination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         localSavedInstanceState = savedInstanceState;
         setContentView(R.layout.activity_maps);
+
+        ctx=MapsActivity.this;
+        source=new ArrayList<LatLng>();
+        destination=new ArrayList<LatLng>();
 
         src_autoCompleteTextView = (AutoCompleteTextView)
                 findViewById(R.id.source);
@@ -124,8 +131,10 @@ public class MapsActivity extends FragmentActivity {
                                         src_lat = temp_lat;
                                         src_lng = temp_lng;
                                     }
-                                    if(!dest_autoCompleteTextView.getText().toString().equals(""))
-                                        setUpMap(src_lat,src_lng);
+                                    if(!dest_autoCompleteTextView.getText().toString().equals("")) {
+                                        setUpMap(src_lat, src_lng);
+                                        new Myplaces().execute();
+                                    }
                                 }
                             });
                         }
@@ -174,8 +183,11 @@ public class MapsActivity extends FragmentActivity {
                                         dest_lat = temp_lat;
                                         dest_lng = temp_lng;
                                     }
-                                    if(!src_autoCompleteTextView.getText().toString().equals(""))
-                                        setUpMap(src_lat,src_lng);
+                                    if(!src_autoCompleteTextView.getText().toString().equals("")) {
+                                        setUpMap(src_lat, src_lng);
+
+                                    }
+                                    new Myplaces().execute();
                                 }
                             });
                         }
@@ -232,6 +244,7 @@ public class MapsActivity extends FragmentActivity {
 
         //searchString=dest;
         //new PlacesService().execute();
+
     }
 
     @Override
@@ -277,10 +290,10 @@ public class MapsActivity extends FragmentActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
 
-        public String getAddress(double lat,double lng)
+        public static String getAddress(double lat,double lng)
         {
             String post = "";
-            Geocoder code=new Geocoder(MapsActivity.this);
+            Geocoder code=new Geocoder(ctx);
             try
             {
 
@@ -363,8 +376,7 @@ public class MapsActivity extends FragmentActivity {
         private static final String API_KEY = "YOUR KEY";
 
 
-        ArrayList<LatLng> source=new ArrayList<LatLng>();
-        ArrayList<LatLng> destination=new ArrayList<LatLng>();
+
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);

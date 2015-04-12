@@ -32,7 +32,7 @@
         <!-- Mitesh : AIzaSyC1HJmBWe22GgjRFD0N0b1iGwG4jc_XVtY
             Snehit : AIzaSyCKNov_-AGmJgzewm4bYog-byOaCFBZxsE
             Dhruv : AIzaSyASbmdtwJw9nwT4pWaKzUtPHGR8AaLxRUU
-            Browser Key : AIzaSyAyx6jzhGPyv0is75TmITQMSvqV2cNoIy0-->
+            Browser Key : AIzaSyAPC6qEC6gAyl2_yo27SZhRijNrxR70F3o-->
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" >
